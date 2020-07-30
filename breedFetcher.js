@@ -3,18 +3,21 @@ const url = "https://api.thecatapi.com/v1/breeds/search?q=";
 const breedName = process.argv.slice(2);
 
 
-request(url + breedName,(error,response,body) => {
-  console.log("Error: ", error);
-  const data = JSON.parse(body);
-  console.log(body);
-  console.log(typeof body);
-  console.log('Status Code: ', response && response.statusCode);
-  if (data.length === 0) {
-    console.log("The breed you have searched does not exist.");
-  } else if (response && response.statusCode >= 400) {
-    console.log(data.message);
-  } else if (data.length !== 0) {
-    console.log(data[0].description);
-  }
-});
+const fetchBreedDescription = function(breedName, callback) {
 
+  request(url + breedName,(error,response,body) => {
+    if (error) {
+      callback(error,null);
+      return;
+    }
+    const data = JSON.parse(body);
+    if (!data[0]) {
+      callback(`No data on ${breedName}`, null);
+    } else {
+      callback(null, data[0].description.trim()); // if not trimmed, the test fails
+    }
+  });
+};
+
+
+module.exports = { fetchBreedDescription };
